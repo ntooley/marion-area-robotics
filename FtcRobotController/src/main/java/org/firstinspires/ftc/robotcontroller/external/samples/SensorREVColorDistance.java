@@ -112,6 +112,8 @@ public class SensorREVColorDistance extends LinearOpMode {
         int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("RelativeLayout", "id", hardwareMap.appContext.getPackageName());
         final View relativeLayout = ((Activity) hardwareMap.appContext).findViewById(relativeLayoutId);
 
+        String currentColor = "";
+
         // wait for the start button to be pressed.
         waitForStart();
 
@@ -144,6 +146,24 @@ public class SensorREVColorDistance extends LinearOpMode {
                 }
             });
 
+            if((hsvValues[0] >= 60 && hsvValues[0] <= 95) && hsvValues[1] >= .7){ //skystone check
+                currentColor = "Normal";
+                //skystoneTimer.reset(); // "stop" the clock
+                telemetry.addLine("RESET");
+                telemetry.update();
+
+            } else if(hsvValues[1] <= .55 && hsvValues[0] >= 100){ // s <= .25
+                currentColor = "Skystone"; // "resume" the clock
+                //telemetry.addData("Timer", skystoneTimer.time());
+                telemetry.update();
+
+            } else {
+                //skystoneTimer.reset(); // also "stop" the clock
+                currentColor = "Unknown";
+                telemetry.update();
+            }
+
+            telemetry.addData("Current Reading: ", currentColor);
             telemetry.update();
         }
 
