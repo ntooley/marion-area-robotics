@@ -35,6 +35,14 @@ public class autoLibrary {
         rightMotor2 = rm2;
     }
 
+    public void setColorSensor(ColorSensor color){
+        colorSensor = color;
+    }
+
+    public void setDistanceSensor(DistanceSensor distance){
+        distanceSensor = distance;
+    }
+
     public void move(double power){
         leftMotor1.setPower(power);
         leftMotor2.setPower(power);
