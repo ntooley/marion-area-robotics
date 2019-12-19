@@ -13,20 +13,20 @@ import java.util.Locale;
 
 public class autoLibrary {
 
-    float hsvValues[] = {0F, 0F, 0F};
+    private float hsvValues[] = {0F, 0F, 0F};
 
     // values is a reference to the hsvValues array.
-    final float values[] = hsvValues;
+    private final float values[] = hsvValues;
 
-    DcMotor leftMotor1;
-    DcMotor leftMotor2;
-    DcMotor rightMotor1;
-    DcMotor rightMotor2;
+    private DcMotor leftMotor1;
+    private DcMotor leftMotor2;
+    private DcMotor rightMotor1;
+    private DcMotor rightMotor2;
 
-    ColorSensor colorSensor;
-    DistanceSensor distanceSensor;
+    private ColorSensor colorSensor;
+    private DistanceSensor distanceSensor;
 
-    String currentBlock = "";
+    private String currentBlock = "";
 
     public autoLibrary(DcMotor lm1, DcMotor lm2, DcMotor rm1, DcMotor rm2) {
         leftMotor1 = lm1;
@@ -41,6 +41,10 @@ public class autoLibrary {
 
     public void setDistanceSensor(DistanceSensor distance){
         distanceSensor = distance;
+    }
+
+    public String getCurrentBlock(){
+        return currentBlock;
     }
 
     public void move(double power){
