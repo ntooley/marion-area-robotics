@@ -28,13 +28,6 @@ public class autoLibrary {
 
     private String currentBlock = "";
 
-    public autoLibrary(DcMotor lm1, DcMotor lm2, DcMotor rm1, DcMotor rm2) {
-        leftMotor1 = lm1;
-        leftMotor2 = lm2;
-        rightMotor1 = rm1;
-        rightMotor2 = rm2;
-    }
-
     public void setColorSensor(ColorSensor color){
         colorSensor = color;
     }
@@ -43,8 +36,23 @@ public class autoLibrary {
         distanceSensor = distance;
     }
 
+    public void setMotors(DcMotor lm1, DcMotor lm2, DcMotor rm1, DcMotor rm2){
+        leftMotor1 = lm1;
+        leftMotor2 = lm2;
+        rightMotor1 = lm1;
+        rightMotor2 = lm2;
+    }
+
     public String getCurrentBlock(){
         return currentBlock;
+    }
+
+    public double getCurrentDistance(){
+        return distanceSensor.getDistance(DistanceUnit.CM);
+    }
+
+    public float[] getHsvValues(){
+        return hsvValues;
     }
 
     public void move(double power){
@@ -86,7 +94,7 @@ public class autoLibrary {
         rightMotor2.setPower(-power);
     }
 
-    public float[] sensorBoilerplate(){
+    public float[] sensorLoop(){
         // sometimes it helps to multiply the raw RGB values with a scale factor
         // to amplify/attentuate the measured values.
         final double SCALE_FACTOR = 255;
@@ -116,7 +124,7 @@ public class autoLibrary {
 
     public boolean skystoneCheck(){
 
-        float[] hsvArray = sensorBoilerplate();
+        float[] hsvArray = sensorLoop();
 
         /*if (currentDistance <= 6.5) {
             if ((currentHue >= 70 && currentHue <= 100) && currentSat >= .6) {
