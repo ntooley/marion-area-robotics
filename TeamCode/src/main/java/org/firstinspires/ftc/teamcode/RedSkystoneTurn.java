@@ -39,6 +39,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.vuforia.ar.pl.DrawOverlayView;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -63,7 +64,6 @@ public class RedSkystoneTurn extends LinearOpMode {
     static final float FORWARD_SPEED = .8f;
     static final float TURN_SPEED = .6f;
 
-    String currentColor = "Unknown";
     String currentStatus = "Running";
 
     DcMotor leftMotor1 = null;
@@ -73,12 +73,7 @@ public class RedSkystoneTurn extends LinearOpMode {
 
     DcMotor yoinkMotor = null;
 
-    float hsvValues[] = {0F, 0F, 0F};
-
-    // values is a reference to the hsvValues array.
-    final float values[] = hsvValues;
-
-    int currentBlock = 6;
+    autoLibrary DriveTrain = new autoLibrary();
 
     /**
      * Note that the REV Robotics Color-Distance incorporates two sensors into one device.
@@ -110,108 +105,19 @@ public class RedSkystoneTurn extends LinearOpMode {
      *
      */
 
-    public void move(double power){
-        leftMotor1.setPower(power);
-        rightMotor1.setPower(power);
-        leftMotor2.setPower(power);
-        rightMotor2.setPower(power);
-    }
-
-    public void strafeRight(double power){
-        leftMotor1.setPower(power);
-        rightMotor1.setPower(-power);
-        leftMotor2.setPower(-power);
-        rightMotor2.setPower(power);
-    }
-
-    public void strafeLeft(double power){
-        leftMotor1.setPower(-power);
-        rightMotor1.setPower(power);
-        leftMotor2.setPower(power);
-        rightMotor2.setPower(-power);
-    }
-
-    public void turnLeft(double power){
-        leftMotor1.setPower(-power);
-        leftMotor2.setPower(-power);
-        rightMotor1.setPower(power);
-        rightMotor2.setPower(power);
-    }
-
-    public void turnRight(double power){
-        leftMotor1.setPower(power);
-        leftMotor2.setPower(power);
-        rightMotor1.setPower(-power);
-        rightMotor2.setPower(-power);
-    }
-
-    public void sensorBoilerplate(){
-        // sometimes it helps to multiply the raw RGB values with a scale factor
-        // to amplify/attentuate the measured values.
-        final double SCALE_FACTOR = 255;
-
-            // convert the RGB values to HSV values.
-            // multiply by the SCALE_FACTOR.
-            // then cast it back to int (SCALE_FACTOR is a double)
-        Color.RGBToHSV((int) (sensorColor.red() * SCALE_FACTOR),
-                    (int) (sensorColor.green() * SCALE_FACTOR),
-                    (int) (sensorColor.blue() * SCALE_FACTOR),
-                    hsvValues);
-
-            // send the info back to driver station using telemetry function.
-        telemetry.addData("Distance (cm)",
-                    String.format(Locale.US, "%.02f", sensorDistance.getDistance(DistanceUnit.CM)));
-        telemetry.addData("Hue", hsvValues[0]);
-        telemetry.addData("Sat: ", hsvValues[1]);
-        telemetry.addData("Value: ", hsvValues[2]);
-
-        telemetry.addData("Block: ", currentColor);
-        telemetry.addData("Status", currentStatus);
-
-        telemetry.update();
-    }
-
-    public boolean skystoneCheck(){
-
-        /*if (currentDistance <= 6.5) {
-            if ((currentHue >= 70 && currentHue <= 100) && currentSat >= .6) {
-                currentColor = "Normal";
-            } else if (currentHue >= 100 && currentSat <= .5) {
-                currentColor = "Skystone";
-            }
-        }*/
-
-
-
-        // h >= 20 && h <= 50 && s >= .55
-        if((hsvValues[0] >= 60 && hsvValues[0] <= 95) && hsvValues[1] >= .7){ //skystone check
-            currentColor = "Normal";
-            //skystoneTimer.reset(); // "stop" the clock
-            telemetry.addLine("RESET");
-            telemetry.update();
-            teleUpdate();
-            return false;
-        } else if(hsvValues[1] <= .55 && hsvValues[0] >= 100){ // s <= .25
-            currentColor = "Skystone"; // "resume" the clock
-            //telemetry.addData("Timer", skystoneTimer.time());
-            telemetry.update();
-            teleUpdate();
-            return true;
-        } else {
-            //skystoneTimer.reset(); // also "stop" the clock
-            currentColor = "Unknown";
-            telemetry.update();
-            teleUpdate();
-            return false;
-        }
-    }
-
     public void teleUpdate(){
-        telemetry.addData("Block: ", currentColor);
-        telemetry.addData("Status", currentStatus);
+        float[] values = DriveTrain.getHsvValues();
+
+        telemetry.addData("Status: ", currentStatus);
+        telemetry.addData("Block: ", DriveTrain.getCurrentBlock());
+        telemetry.addData("Distance: ", DriveTrain.getCurrentDistance());
+        telemetry.addData("Hue: ", values[0]);
+        telemetry.addData("Saturation: ", values[1]);
+        telemetry.addData("Value: ", values[2]);
 
         telemetry.update();
     }
+
 
     @Override
     public void runOpMode() {
@@ -241,8 +147,13 @@ public class RedSkystoneTurn extends LinearOpMode {
         // get a reference to the distance sensor that shares the same name.
         sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
 
-        // wait for the start button to be pressed.
+        DriveTrain.setMotors(leftMotor1, leftMotor2, rightMotor1, rightMotor2);
+
+        DriveTrain.setColorSensor(sensorColor);
+        DriveTrain.setDistanceSensor(sensorDistance);
+
         waitForStart();
+        // wait for the start button to be pressed.
 
         double blockPower = .5;
         double grabTime = 1;
@@ -256,28 +167,25 @@ public class RedSkystoneTurn extends LinearOpMode {
         double buildZoneTime = 4.0;
 
         // Move Up to the Stones
-        sensorBoilerplate();
-        while(opModeIsActive() && sensorDistance.getDistance(DistanceUnit.CM) >= 6.5) {
-            move(.6);
+        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 6.5) {
+            DriveTrain.move(blockPower);
             currentStatus = "Moving";
-            sensorBoilerplate();
             teleUpdate();
         }
 
-        move(0);
+        DriveTrain.stop();
         sleep(1000);
 
         // Check For Skystone
-        sensorBoilerplate();
-        while (opModeIsActive() && !skystoneCheck()){
-            sensorBoilerplate();
-            strafeLeft(blockPower);
+        while (opModeIsActive() && !DriveTrain.skystoneCheck()){
+            DriveTrain.strafeLeft(blockPower);
             teleUpdate();
         }
 
         //Insert Claw Grab
-        move(0);
+        DriveTrain.stop();
         yoinkMotor.setPower(1);
+
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= grabTime){
             currentStatus = "Grabbing";
@@ -286,31 +194,31 @@ public class RedSkystoneTurn extends LinearOpMode {
 
         // Backup
         yoinkMotor.setPower(.3);
-        move(-FORWARD_SPEED);
+        DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= .6){
             currentStatus = "Backing Up";
             teleUpdate();
         }
 
-        move(0);
+        DriveTrain.stop();
 
         // turn to bridge
-        turnRight(TURN_SPEED);
+        DriveTrain.turnRight(TURN_SPEED);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= turnTime){
             teleUpdate();
         }
 
         // move to bridge
-        move(FORWARD_SPEED);
+        DriveTrain.move(FORWARD_SPEED);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= buildZoneTime){
             teleUpdate();
         }
 
         // Claw Ungrab
-        move(0);
+        DriveTrain.move(0);
         yoinkMotor.setPower(-1);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= grabTime){
@@ -319,7 +227,7 @@ public class RedSkystoneTurn extends LinearOpMode {
         }
 
         // Move back to stones
-        move(-FORWARD_SPEED);
+        DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= buildZoneTime + 1){
             teleUpdate();
@@ -327,7 +235,7 @@ public class RedSkystoneTurn extends LinearOpMode {
 
         // Close claw, turn back to the stones
         yoinkMotor.setPower(0);
-        turnLeft(TURN_SPEED);
+        DriveTrain.turnLeft(TURN_SPEED);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= turnTime){
             currentStatus = "Strafing Left";
@@ -335,23 +243,20 @@ public class RedSkystoneTurn extends LinearOpMode {
         }
 
         // Move Up to the Stones
-        sensorBoilerplate();
-        while(opModeIsActive() && sensorDistance.getDistance(DistanceUnit.CM) >= 6.5) {
-            sensorBoilerplate();
-            move(.6);
+        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 6.5) {
+            DriveTrain.move(.6);
             currentStatus = "Moving";
             teleUpdate();
         }
 
         // Skystone Check
-        while (opModeIsActive() && !skystoneCheck()){
-            sensorBoilerplate();
-            strafeLeft(blockPower);
+        while (opModeIsActive() && !DriveTrain.skystoneCheck()){
+            DriveTrain.strafeLeft(blockPower);
             teleUpdate();
         }
 
         //Claw Grab
-        move(0);
+        DriveTrain.stop();
         yoinkMotor.setPower(1);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= grabTime){
@@ -360,38 +265,38 @@ public class RedSkystoneTurn extends LinearOpMode {
         }
 
         // move back
-        move(-FORWARD_SPEED);
+        DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= .8){
             currentStatus = "Backing Up";
             teleUpdate();
         }
 
-        move(0);
+        DriveTrain.stop();
 
         // turn to the bridge
-        turnRight(TURN_SPEED);
+        DriveTrain.turnRight(TURN_SPEED);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= turnTime){
             teleUpdate();
         }
 
         // back up to the stones
-        move(FORWARD_SPEED);
+        DriveTrain.move(FORWARD_SPEED);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= buildZoneTime + 1){
             teleUpdate();
         }
 
         // turn back to the stones
-        turnLeft(TURN_SPEED);
+        DriveTrain.turnLeft(TURN_SPEED);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= turnTime){
             teleUpdate();
         }
 
         //Drop skystone
-        move(0);
+        DriveTrain.stop();
         yoinkMotor.setPower(-1);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= grabTime){
@@ -401,13 +306,13 @@ public class RedSkystoneTurn extends LinearOpMode {
 
         // Parking
         yoinkMotor.setPower(0);
-        move(-FORWARD_SPEED);
+        DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= 2){
             teleUpdate();
         }
 
-        move(0);
+        DriveTrain.stop();
         currentStatus = "Done";
         sleep(2000);
 
