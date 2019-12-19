@@ -26,10 +26,17 @@ public class autoLibrary {
     private ColorSensor colorSensor;
     private DistanceSensor distanceSensor;
 
+    private ColorSensor floorSensor;
+
     private String currentBlock = "";
+    private String currentMotorStatus = "";
 
     public void setColorSensor(ColorSensor color){
         colorSensor = color;
+    }
+
+    public void setFloorSensor(ColorSensor floor){
+        floorSensor = floor;
     }
 
     public void setDistanceSensor(DistanceSensor distance){
@@ -55,15 +62,22 @@ public class autoLibrary {
         return hsvValues;
     }
 
+    public String getCurrentMotorStatus(){
+        return currentMotorStatus;
+    }
+
     public void move(double power){
         leftMotor1.setPower(power);
         leftMotor2.setPower(power);
         rightMotor1.setPower(power);
         rightMotor2.setPower(power);
+
+        currentMotorStatus = String.format("Motors Currently Moving at %p Power", power);
     }
 
     public void stop(){
         move(0);
+        currentMotorStatus = "Motors Stopped";
     }
 
     public void turnLeft(double power){
@@ -71,6 +85,8 @@ public class autoLibrary {
         leftMotor2.setPower(-power);
         rightMotor1.setPower(power);
         rightMotor2.setPower(power);
+
+        currentMotorStatus = String.format("Motors currently turning left at %p power", power);
     }
 
     public void turnRight(double power){
@@ -78,6 +94,8 @@ public class autoLibrary {
         leftMotor2.setPower(power);
         rightMotor1.setPower(-power);
         rightMotor2.setPower(-power);
+
+        currentMotorStatus = String.format("Motors currently turning right at %p power", power);
     }
 
     public void strafeRight(double power){
@@ -85,6 +103,8 @@ public class autoLibrary {
         rightMotor1.setPower(-power);
         leftMotor2.setPower(-power);
         rightMotor2.setPower(power);
+
+        currentMotorStatus = String.format("Motors currently strafing right at %p power", power);
     }
 
     public void strafeLeft(double power){
@@ -92,6 +112,8 @@ public class autoLibrary {
         rightMotor1.setPower(power);
         leftMotor2.setPower(power);
         rightMotor2.setPower(-power);
+
+        currentMotorStatus = String.format("Motors currently strafing left at %p power", power);
     }
 
     public float[] sensorLoop(){
