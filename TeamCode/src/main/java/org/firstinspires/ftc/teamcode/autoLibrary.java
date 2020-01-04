@@ -31,6 +31,7 @@ public class autoLibrary {
     private String currentBlock = "";
     private String currentMotorStatus = "";
 
+
     public void setColorSensor(ColorSensor color){
         colorSensor = color;
     }
@@ -144,6 +145,34 @@ public class autoLibrary {
         return hsvValues;
     }
 
+    private float[] floorLoop(){
+        // sometimes it helps to multiply the raw RGB values with a scale factor
+        // to amplify/attentuate the measured values.
+        final double SCALE_FACTOR = 255;
+
+        // convert the RGB values to HSV values.
+        // multiply by the SCALE_FACTOR.
+        // then cast it back to int (SCALE_FACTOR is a double)
+        Color.RGBToHSV((int) (floorSensor.red() * SCALE_FACTOR),
+                (int) (floorSensor.green() * SCALE_FACTOR),
+                (int) (floorSensor.blue() * SCALE_FACTOR),
+                hsvValues);
+
+        // send the info back to driver station using telemetry function.
+        /*telemetry.addData("Distance (cm)",
+                String.format(Locale.US, "%.02f", distance.getDistance(DistanceUnit.CM)));
+        telemetry.addData("Hue", hsvValues[0]);
+        telemetry.addData("Sat: ", hsvValues[1]);
+        telemetry.addData("Value: ", hsvValues[2]);
+
+        telemetry.addData("Block: ", currentColor);
+        telemetry.addData("Status", currentStatus);
+
+        telemetry.update();*/
+
+        return hsvValues;
+    }
+
     public boolean skystoneCheck(){
 
         float[] hsvArray = sensorLoop();
@@ -170,6 +199,31 @@ public class autoLibrary {
         } else {
             //skystoneTimer.reset(); // also "stop" the clock
             currentBlock = "Unknown";
+            return false;
+        }
+    }
+
+    public boolean floorCheck(){
+        float[] hsvArray = floorLoop();
+
+        /*if (currentDistance <= 6.5) {
+            if ((currentHue >= 70 && currentHue <= 100) && currentSat >= .6) {
+                currentColor = "Normal";
+            } else if (currentHue >= 100 && currentSat <= .5) {
+                currentColor = "Skystone";
+            }
+        }*/
+
+
+
+        // h >= 20 && h <= 50 && s >= .55
+        if(hsvArray[1] >= .55){ //skystone check
+            currentBlock = "Tape";
+            //skystoneTimer.reset(); // "stop" the clock
+            return true;
+        } else { // s <= .25
+            currentBlock = "Ground"; // "resume" the clock
+            //telemetry.addData("Timer", skystoneTimer.time());
             return false;
         }
     }
