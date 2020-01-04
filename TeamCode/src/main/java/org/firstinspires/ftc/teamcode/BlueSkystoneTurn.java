@@ -56,8 +56,8 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
     ColorSensor floorSensor;
 
-    static final float FORWARD_SPEED = .8f;
-    static final float TURN_SPEED = .5f;
+    static final float FORWARD_SPEED = 1f;
+    static final float TURN_SPEED = .65f;
 
     String currentStatus = "Running";
 
@@ -153,30 +153,32 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
         DriveTrain.setColorSensor(sensorColor);
         DriveTrain.setDistanceSensor(sensorDistance);
+        DriveTrain.setFloorSensor(floorSensor);
 
         waitForStart();
         // wait for the start button to be pressed.
 
-        double blockPower = .5;
+        double blockPower = .6;
         double grabTime = 1;
-        double turnTime = 1.53;
+        double turnTime = 1.1;
+        double tapePower = .7;
 
         /* Im using this variable to sync up my to strafing commands
         The first one moves to the bridge, the second one moves away
         Thus, I created this to make sure that both commands are
         executed for the same amount of time, hopefully
          */
-        double buildZoneTime = 4.0;
+        double buildZoneTime = 3.1;
 
         // Move Up to the Stones
-        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 5.5) {
+        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 5.8) {
             DriveTrain.move(blockPower);
             currentStatus = "Moving";
             teleUpdate();
         }
 
         DriveTrain.stop();
-        sleep(1000);
+        sleep(500);
 
         // Check For Skystone
         while (opModeIsActive() && !DriveTrain.skystoneCheck()){
@@ -186,7 +188,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
         //Insert Claw Grab
         DriveTrain.stop();
-        yoinkMotor.setPower(1);
+        yoinkMotor.setPower(.9);
 
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= grabTime){
@@ -198,7 +200,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
         yoinkMotor.setPower(.3);
         DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
-        while (opModeIsActive() && runtime.time() <= .6){
+        while (opModeIsActive() && runtime.time() <= .4){
             currentStatus = "Backing Up";
             teleUpdate();
         }
@@ -214,10 +216,23 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
         DriveTrain.stop();
 
-        // move to bridge
+        /*// move to bridge
         DriveTrain.move(FORWARD_SPEED);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= buildZoneTime){
+            teleUpdate();
+        }*/
+
+        // Floor Check
+        while (opModeIsActive() && !DriveTrain.floorCheck()){
+            DriveTrain.move(tapePower);
+            teleUpdate();
+        }
+
+        // Move past the tape
+        DriveTrain.move(FORWARD_SPEED);
+        runtime.reset();
+        while (opModeIsActive() && runtime.time() <= .5){
             teleUpdate();
         }
 
@@ -233,7 +248,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
         // Move back to stones
         DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
-        while(opModeIsActive() && runtime.time() <= buildZoneTime + 1){
+        while(opModeIsActive() && runtime.time() <= buildZoneTime){
             teleUpdate();
         }
 
@@ -241,7 +256,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
         yoinkMotor.setPower(0);
         DriveTrain.turnRight(TURN_SPEED);
         runtime.reset();
-        while(opModeIsActive() && runtime.time() <= turnTime - .2){
+        while(opModeIsActive() && runtime.time() <= turnTime){
             currentStatus = "Strafing Left";
             teleUpdate();
         }
@@ -249,14 +264,14 @@ public class BlueSkystoneTurn extends LinearOpMode {
         DriveTrain.stop();
 
         // Move Up to the Stones
-        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 6.5) {
+        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 5.5) {
             DriveTrain.move(.6);
             currentStatus = "Moving";
             teleUpdate();
         }
 
         DriveTrain.stop();
-        sleep(1000);
+        sleep(500);
 
         // Skystone Check
         while (opModeIsActive() && !DriveTrain.skystoneCheck()){
@@ -266,7 +281,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
         //Claw Grab
         DriveTrain.stop();
-        yoinkMotor.setPower(1);
+        yoinkMotor.setPower(.9);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= grabTime){
             currentStatus = "Grabbing";
@@ -276,7 +291,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
         // move back
         DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
-        while (opModeIsActive() && runtime.time() <= .8){
+        while (opModeIsActive() && runtime.time() <= .6){
             currentStatus = "Backing Up";
             teleUpdate();
         }
@@ -286,16 +301,29 @@ public class BlueSkystoneTurn extends LinearOpMode {
         // turn to the bridge
         DriveTrain.turnLeft(TURN_SPEED);
         runtime.reset();
-        while (opModeIsActive() && runtime.time() <= turnTime){
+        while (opModeIsActive() && runtime.time() <= turnTime + .1){
             teleUpdate();
         }
 
-        // move to the bridge
+        // Floor Check
+        while (opModeIsActive() && !DriveTrain.floorCheck()){
+            DriveTrain.move(tapePower);
+            teleUpdate();
+        }
+
+        // Move past the tape
+        DriveTrain.move(FORWARD_SPEED);
+        runtime.reset();
+        while (opModeIsActive() && runtime.time() <= .5){
+            teleUpdate();
+        }
+
+        /*// move to the bridge
         DriveTrain.move(FORWARD_SPEED);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= buildZoneTime + 1){
             teleUpdate();
-        }
+        }*/
 
         //Drop skystone
         DriveTrain.stop();
@@ -307,10 +335,8 @@ public class BlueSkystoneTurn extends LinearOpMode {
         }
 
         // Parking
-        yoinkMotor.setPower(0);
-        DriveTrain.move(-FORWARD_SPEED);
-        runtime.reset();
-        while(opModeIsActive() && runtime.time() <= 2){
+        while (opModeIsActive() && !DriveTrain.floorCheck()){
+            DriveTrain.move(-tapePower);
             teleUpdate();
         }
 
