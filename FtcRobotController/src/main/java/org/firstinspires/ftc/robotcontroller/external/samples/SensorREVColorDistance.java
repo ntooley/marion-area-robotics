@@ -53,7 +53,7 @@ import java.util.Locale;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
  */
 @TeleOp(name = "Sensor: REVColorDistance", group = "Sensor")
-@Disabled                            // Comment this out to add to the opmode list
+// @Disabled                            // Comment this out to add to the opmode list
 public class SensorREVColorDistance extends LinearOpMode {
 
     /**
@@ -88,6 +88,8 @@ public class SensorREVColorDistance extends LinearOpMode {
     ColorSensor sensorColor;
     DistanceSensor sensorDistance;
 
+    ColorSensor floorSensor;
+
     @Override
     public void runOpMode() {
 
@@ -97,8 +99,11 @@ public class SensorREVColorDistance extends LinearOpMode {
         // get a reference to the distance sensor that shares the same name.
         sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
 
+        floorSensor = hardwareMap.get(ColorSensor.class, "floor sensor");
+
         // hsvValues is an array that will hold the hue, saturation, and value information.
         float hsvValues[] = {0F, 0F, 0F};
+        float floorHSV[] = {0F, 0F, 0F};
 
         // values is a reference to the hsvValues array.
         final float values[] = hsvValues;
@@ -128,14 +133,23 @@ public class SensorREVColorDistance extends LinearOpMode {
                     (int) (sensorColor.blue() * SCALE_FACTOR),
                     hsvValues);
 
+            Color.RGBToHSV((int) (floorSensor.red() * SCALE_FACTOR), // for the floor sensor
+                    (int) (floorSensor.green() * SCALE_FACTOR),
+                    (int) (floorSensor.blue() * SCALE_FACTOR),
+                    floorHSV);
+
+
             // send the info back to driver station using telemetry function.
             telemetry.addData("Distance (cm)",
                     String.format(Locale.US, "%.02f", sensorDistance.getDistance(DistanceUnit.CM)));
-            telemetry.addData("Alpha", sensorColor.alpha());
-            telemetry.addData("Red  ", sensorColor.red());
-            telemetry.addData("Green", sensorColor.green());
-            telemetry.addData("Blue ", sensorColor.blue());
+
             telemetry.addData("Hue", hsvValues[0]);
+            telemetry.addData("Saturation: ", hsvValues[1]);
+            telemetry.addData("Value: ", hsvValues[2]);
+
+            telemetry.addData("Floor Hue: ", floorHSV[0]);
+            telemetry.addData("Floor Saturation: ", floorHSV[1]);
+            telemetry.addData("Floor Value: ", floorHSV[2]);
 
             // change the background color to match the color detected by the RGB sensor.
             // pass a reference to the hue, saturation, and value array as an argument
@@ -163,7 +177,7 @@ public class SensorREVColorDistance extends LinearOpMode {
                 telemetry.update();
             }
 
-            telemetry.addData("Current Reading: ", currentColor);
+            // telemetry.addData("Current Reading: ", currentColor);
             telemetry.update();
         }
 

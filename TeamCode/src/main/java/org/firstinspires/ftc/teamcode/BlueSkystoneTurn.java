@@ -48,7 +48,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
  */
 @Autonomous(name = "Blue Skystone Turn", group = "Skystone")
-@Disabled                            // Comment this out to add to the opmode list
+// @Disabled                            // Comment this out to add to the opmode list
 public class BlueSkystoneTurn extends LinearOpMode {
 
     ColorSensor sensorColor;
@@ -57,7 +57,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
     ColorSensor floorSensor;
 
     static final float FORWARD_SPEED = .8f;
-    static final float TURN_SPEED = .6f;
+    static final float TURN_SPEED = .5f;
 
     String currentStatus = "Running";
 
@@ -102,6 +102,11 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
     public void teleUpdate(){
         float[] values = DriveTrain.getHsvValues();
+
+        telemetry.addData("L1 Power: ", leftMotor1.getPower());
+        telemetry.addData("L2 Power: ", leftMotor2.getPower());
+        telemetry.addData("R1 Power: ", rightMotor1.getPower());
+        telemetry.addData("R2 Power: ", rightMotor2.getPower());
 
         telemetry.addData("Status: ", currentStatus);
         telemetry.addData("Block: ", DriveTrain.getCurrentBlock());
@@ -154,7 +159,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
         double blockPower = .5;
         double grabTime = 1;
-        double turnTime = 2.0;
+        double turnTime = 1.53;
 
         /* Im using this variable to sync up my to strafing commands
         The first one moves to the bridge, the second one moves away
@@ -164,7 +169,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
         double buildZoneTime = 4.0;
 
         // Move Up to the Stones
-        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 6.5) {
+        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 5.5) {
             DriveTrain.move(blockPower);
             currentStatus = "Moving";
             teleUpdate();
@@ -207,6 +212,8 @@ public class BlueSkystoneTurn extends LinearOpMode {
             teleUpdate();
         }
 
+        DriveTrain.stop();
+
         // move to bridge
         DriveTrain.move(FORWARD_SPEED);
         runtime.reset();
@@ -234,10 +241,12 @@ public class BlueSkystoneTurn extends LinearOpMode {
         yoinkMotor.setPower(0);
         DriveTrain.turnRight(TURN_SPEED);
         runtime.reset();
-        while(opModeIsActive() && runtime.time() <= turnTime){
+        while(opModeIsActive() && runtime.time() <= turnTime - .2){
             currentStatus = "Strafing Left";
             teleUpdate();
         }
+
+        DriveTrain.stop();
 
         // Move Up to the Stones
         while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 6.5) {
@@ -245,6 +254,9 @@ public class BlueSkystoneTurn extends LinearOpMode {
             currentStatus = "Moving";
             teleUpdate();
         }
+
+        DriveTrain.stop();
+        sleep(1000);
 
         // Skystone Check
         while (opModeIsActive() && !DriveTrain.skystoneCheck()){
@@ -272,23 +284,16 @@ public class BlueSkystoneTurn extends LinearOpMode {
         DriveTrain.stop();
 
         // turn to the bridge
-        DriveTrain.turnRight(TURN_SPEED);
+        DriveTrain.turnLeft(TURN_SPEED);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= turnTime){
             teleUpdate();
         }
 
-        // back up to the stones
+        // move to the bridge
         DriveTrain.move(FORWARD_SPEED);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= buildZoneTime + 1){
-            teleUpdate();
-        }
-
-        // turn back to the stones
-        DriveTrain.turnLeft(TURN_SPEED);
-        runtime.reset();
-        while(opModeIsActive() && runtime.time() <= turnTime){
             teleUpdate();
         }
 

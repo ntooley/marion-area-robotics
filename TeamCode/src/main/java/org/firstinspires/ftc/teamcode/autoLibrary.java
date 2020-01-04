@@ -46,8 +46,8 @@ public class autoLibrary {
     public void setMotors(DcMotor lm1, DcMotor lm2, DcMotor rm1, DcMotor rm2){
         leftMotor1 = lm1;
         leftMotor2 = lm2;
-        rightMotor1 = lm1;
-        rightMotor2 = lm2;
+        rightMotor1 = rm1;
+        rightMotor2 = rm2;
     }
 
     public String getCurrentBlock(){
@@ -72,12 +72,12 @@ public class autoLibrary {
         rightMotor1.setPower(power);
         rightMotor2.setPower(power);
 
-        currentMotorStatus = String.format("Motors Currently Moving at %p Power", power);
+        // currentMotorStatus = String.format("Motors Currently Moving at %p Power", power);
     }
 
     public void stop(){
         move(0);
-        currentMotorStatus = "Motors Stopped";
+        // currentMotorStatus = "Motors Stopped";
     }
 
     public void turnLeft(double power){
@@ -86,7 +86,7 @@ public class autoLibrary {
         rightMotor1.setPower(power);
         rightMotor2.setPower(power);
 
-        currentMotorStatus = String.format("Motors currently turning left at %p power", power);
+        // currentMotorStatus = String.format("Motors currently turning left at %p power", power);
     }
 
     public void turnRight(double power){
@@ -95,7 +95,7 @@ public class autoLibrary {
         rightMotor1.setPower(-power);
         rightMotor2.setPower(-power);
 
-        currentMotorStatus = String.format("Motors currently turning right at %p power", power);
+        // currentMotorStatus = String.format("Motors currently turning right at %p power", power);
     }
 
     public void strafeRight(double power){
@@ -104,7 +104,7 @@ public class autoLibrary {
         leftMotor2.setPower(-power);
         rightMotor2.setPower(power);
 
-        currentMotorStatus = String.format("Motors currently strafing right at %p power", power);
+        // currentMotorStatus = String.format("Motors currently strafing right at %p power", power);
     }
 
     public void strafeLeft(double power){
@@ -113,7 +113,7 @@ public class autoLibrary {
         leftMotor2.setPower(power);
         rightMotor2.setPower(-power);
 
-        currentMotorStatus = String.format("Motors currently strafing left at %p power", power);
+        // currentMotorStatus = String.format("Motors currently strafing left at %p power", power);
     }
 
     public float[] sensorLoop(){
@@ -163,7 +163,7 @@ public class autoLibrary {
             currentBlock = "Normal";
             //skystoneTimer.reset(); // "stop" the clock
             return false;
-        } else if(hsvArray[1] <= .55 && hsvArray[0] >= 100){ // s <= .25
+        } else if(hsvArray[1] <= .53 && hsvArray[0] >= 100){ // s <= .25
             currentBlock = "Skystone"; // "resume" the clock
             //telemetry.addData("Timer", skystoneTimer.time());
             return true;

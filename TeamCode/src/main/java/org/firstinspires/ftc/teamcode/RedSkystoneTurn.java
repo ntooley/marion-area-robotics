@@ -55,7 +55,7 @@ import java.util.Locale;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
  */
 @Autonomous(name = "Red Skystone Turn", group = "Skystone")
-@Disabled                            // Comment this out to add to the opmode list
+// @Disabled                            // Comment this out to add to the opmode list
 public class RedSkystoneTurn extends LinearOpMode {
 
     ColorSensor sensorColor;
@@ -111,9 +111,12 @@ public class RedSkystoneTurn extends LinearOpMode {
         telemetry.addData("Status: ", currentStatus);
         telemetry.addData("Block: ", DriveTrain.getCurrentBlock());
         telemetry.addData("Distance: ", DriveTrain.getCurrentDistance());
+
         telemetry.addData("Hue: ", values[0]);
         telemetry.addData("Saturation: ", values[1]);
         telemetry.addData("Value: ", values[2]);
+
+        telemetry.addData("Motor Status: ", DriveTrain.getCurrentMotorStatus());
 
         telemetry.update();
     }
@@ -157,7 +160,7 @@ public class RedSkystoneTurn extends LinearOpMode {
 
         double blockPower = .5;
         double grabTime = 1;
-        double turnTime = 2.0;
+        double turnTime = 1.0;
 
         /* Im using this variable to sync up my to strafing commands
         The first one moves to the bridge, the second one moves away
