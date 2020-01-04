@@ -29,8 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -39,11 +37,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.vuforia.ar.pl.DrawOverlayView;
-
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
-import java.util.Locale;
 
 /*
  * This is an example LinearOpMode that shows how to use
@@ -61,8 +54,10 @@ public class RedSkystoneTurn extends LinearOpMode {
     ColorSensor sensorColor;
     DistanceSensor sensorDistance;
 
-    static final float FORWARD_SPEED = .8f;
-    static final float TURN_SPEED = .6f;
+    ColorSensor floorSensor;
+
+    static final float FORWARD_SPEED = 1f;
+    static final float TURN_SPEED = .65f;
 
     String currentStatus = "Running";
 
@@ -108,15 +103,17 @@ public class RedSkystoneTurn extends LinearOpMode {
     public void teleUpdate(){
         float[] values = DriveTrain.getHsvValues();
 
+        telemetry.addData("L1 Power: ", leftMotor1.getPower());
+        telemetry.addData("L2 Power: ", leftMotor2.getPower());
+        telemetry.addData("R1 Power: ", rightMotor1.getPower());
+        telemetry.addData("R2 Power: ", rightMotor2.getPower());
+
         telemetry.addData("Status: ", currentStatus);
         telemetry.addData("Block: ", DriveTrain.getCurrentBlock());
         telemetry.addData("Distance: ", DriveTrain.getCurrentDistance());
-
         telemetry.addData("Hue: ", values[0]);
         telemetry.addData("Saturation: ", values[1]);
         telemetry.addData("Value: ", values[2]);
-
-        telemetry.addData("Motor Status: ", DriveTrain.getCurrentMotorStatus());
 
         telemetry.update();
     }
@@ -150,34 +147,38 @@ public class RedSkystoneTurn extends LinearOpMode {
         // get a reference to the distance sensor that shares the same name.
         sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_color_distance");
 
+        floorSensor = hardwareMap.get(ColorSensor.class, "floor sensor");
+
         DriveTrain.setMotors(leftMotor1, leftMotor2, rightMotor1, rightMotor2);
 
         DriveTrain.setColorSensor(sensorColor);
         DriveTrain.setDistanceSensor(sensorDistance);
+        DriveTrain.setFloorSensor(floorSensor);
 
         waitForStart();
         // wait for the start button to be pressed.
 
-        double blockPower = .5;
+        double blockPower = .6;
         double grabTime = 1;
-        double turnTime = 1.0;
+        double turnTime = 1.1;
+        double tapePower = .7;
 
         /* Im using this variable to sync up my to strafing commands
         The first one moves to the bridge, the second one moves away
         Thus, I created this to make sure that both commands are
         executed for the same amount of time, hopefully
          */
-        double buildZoneTime = 4.0;
+        double buildZoneTime = 3.1;
 
         // Move Up to the Stones
-        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 6.5) {
+        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 5.8) {
             DriveTrain.move(blockPower);
             currentStatus = "Moving";
             teleUpdate();
         }
 
         DriveTrain.stop();
-        sleep(1000);
+        sleep(500);
 
         // Check For Skystone
         while (opModeIsActive() && !DriveTrain.skystoneCheck()){
@@ -187,7 +188,7 @@ public class RedSkystoneTurn extends LinearOpMode {
 
         //Insert Claw Grab
         DriveTrain.stop();
-        yoinkMotor.setPower(1);
+        yoinkMotor.setPower(.9);
 
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= grabTime){
@@ -199,7 +200,7 @@ public class RedSkystoneTurn extends LinearOpMode {
         yoinkMotor.setPower(.3);
         DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
-        while (opModeIsActive() && runtime.time() <= .6){
+        while (opModeIsActive() && runtime.time() <= .4){
             currentStatus = "Backing Up";
             teleUpdate();
         }
@@ -213,10 +214,25 @@ public class RedSkystoneTurn extends LinearOpMode {
             teleUpdate();
         }
 
-        // move to bridge
+        DriveTrain.stop();
+
+        /*// move to bridge
         DriveTrain.move(FORWARD_SPEED);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= buildZoneTime){
+            teleUpdate();
+        }*/
+
+        // Floor Check
+        while (opModeIsActive() && !DriveTrain.floorCheck()){
+            DriveTrain.move(tapePower);
+            teleUpdate();
+        }
+
+        // Move past the tape
+        DriveTrain.move(FORWARD_SPEED);
+        runtime.reset();
+        while (opModeIsActive() && runtime.time() <= .5){
             teleUpdate();
         }
 
@@ -232,7 +248,7 @@ public class RedSkystoneTurn extends LinearOpMode {
         // Move back to stones
         DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
-        while(opModeIsActive() && runtime.time() <= buildZoneTime + 1){
+        while(opModeIsActive() && runtime.time() <= buildZoneTime){
             teleUpdate();
         }
 
@@ -240,17 +256,22 @@ public class RedSkystoneTurn extends LinearOpMode {
         yoinkMotor.setPower(0);
         DriveTrain.turnLeft(TURN_SPEED);
         runtime.reset();
-        while(opModeIsActive() && runtime.time() <= turnTime){
+        while(opModeIsActive() && runtime.time() <= turnTime + .1){
             currentStatus = "Strafing Left";
             teleUpdate();
         }
 
+        DriveTrain.stop();
+
         // Move Up to the Stones
-        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 6.5) {
+        while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 5.5) {
             DriveTrain.move(.6);
             currentStatus = "Moving";
             teleUpdate();
         }
+
+        DriveTrain.stop();
+        sleep(500);
 
         // Skystone Check
         while (opModeIsActive() && !DriveTrain.skystoneCheck()){
@@ -260,7 +281,7 @@ public class RedSkystoneTurn extends LinearOpMode {
 
         //Claw Grab
         DriveTrain.stop();
-        yoinkMotor.setPower(1);
+        yoinkMotor.setPower(.9);
         runtime.reset();
         while (opModeIsActive() && runtime.time() <= grabTime){
             currentStatus = "Grabbing";
@@ -270,7 +291,7 @@ public class RedSkystoneTurn extends LinearOpMode {
         // move back
         DriveTrain.move(-FORWARD_SPEED);
         runtime.reset();
-        while (opModeIsActive() && runtime.time() <= .8){
+        while (opModeIsActive() && runtime.time() <= .4){
             currentStatus = "Backing Up";
             teleUpdate();
         }
@@ -280,23 +301,29 @@ public class RedSkystoneTurn extends LinearOpMode {
         // turn to the bridge
         DriveTrain.turnRight(TURN_SPEED);
         runtime.reset();
-        while (opModeIsActive() && runtime.time() <= turnTime){
+        while (opModeIsActive() && runtime.time() <= turnTime + .1){
             teleUpdate();
         }
 
-        // back up to the stones
+        // Floor Check
+        while (opModeIsActive() && !DriveTrain.floorCheck()){
+            DriveTrain.move(tapePower);
+            teleUpdate();
+        }
+
+        // Move past the tape
+        DriveTrain.move(FORWARD_SPEED);
+        runtime.reset();
+        while (opModeIsActive() && runtime.time() <= .5){
+            teleUpdate();
+        }
+
+        /*// move to the bridge
         DriveTrain.move(FORWARD_SPEED);
         runtime.reset();
         while(opModeIsActive() && runtime.time() <= buildZoneTime + 1){
             teleUpdate();
-        }
-
-        // turn back to the stones
-        DriveTrain.turnLeft(TURN_SPEED);
-        runtime.reset();
-        while(opModeIsActive() && runtime.time() <= turnTime){
-            teleUpdate();
-        }
+        }*/
 
         //Drop skystone
         DriveTrain.stop();
@@ -308,10 +335,8 @@ public class RedSkystoneTurn extends LinearOpMode {
         }
 
         // Parking
-        yoinkMotor.setPower(0);
-        DriveTrain.move(-FORWARD_SPEED);
-        runtime.reset();
-        while(opModeIsActive() && runtime.time() <= 2){
+        while (opModeIsActive() && !DriveTrain.floorCheck()){
+            DriveTrain.move(-tapePower);
             teleUpdate();
         }
 
