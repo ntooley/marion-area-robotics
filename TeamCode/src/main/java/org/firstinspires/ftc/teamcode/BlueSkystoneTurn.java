@@ -56,8 +56,8 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
     ColorSensor floorSensor;
 
-    static final float FORWARD_SPEED = 1f;
-    static final float TURN_SPEED = .65f;
+    static final double FORWARD_SPEED = TimeConstants.FORWARD_SPEED.getValue();
+    static final double TURN_SPEED = TimeConstants.TURN_SPEED.getValue();
 
     String currentStatus = "Running";
 
@@ -68,7 +68,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
 
     DcMotor yoinkMotor = null;
 
-    autoLibrary DriveTrain = new autoLibrary();
+    AutoLibrary DriveTrain = new AutoLibrary();
 
     /**
      * Note that the REV Robotics Color-Distance incorporates two sensors into one device.
@@ -158,17 +158,17 @@ public class BlueSkystoneTurn extends LinearOpMode {
         waitForStart();
         // wait for the start button to be pressed.
 
-        double blockPower = .6;
-        double grabTime = 1;
-        double turnTime = 1.1;
-        double tapePower = .7;
+        double blockPower = TimeConstants.BLOCK_POWER.getValue();
+        double grabTime = TimeConstants.GRAB_TIME.getValue();
+        double turnTime = TimeConstants.TURN_TIME.getValue();
+        double tapePower = TimeConstants.TAPE_POWER.getValue();
 
         /* Im using this variable to sync up my to strafing commands
         The first one moves to the bridge, the second one moves away
         Thus, I created this to make sure that both commands are
         executed for the same amount of time, hopefully
          */
-        double buildZoneTime = 3.1;
+        double buildZoneTime = TimeConstants.BUILD_ZONE_TIME.getValue();
 
         // Move Up to the Stones
         while(opModeIsActive() && DriveTrain.getCurrentDistance() >= 5.8) {

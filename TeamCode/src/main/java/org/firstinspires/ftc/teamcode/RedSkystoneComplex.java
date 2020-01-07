@@ -63,8 +63,8 @@ public class RedSkystoneComplex extends LinearOpMode {
     ColorSensor sensorColor;
     DistanceSensor sensorDistance;
 
-    static final float FORWARD_SPEED = .8f;
-    static final float TURN_SPEED = .6f;
+    static final double FORWARD_SPEED = TimeConstants.FORWARD_SPEED.getValue();
+    static final double TURN_SPEED = TimeConstants.TURN_SPEED.getValue();
 
     String currentColor = "Unknown";
     String currentStatus = "Running";
