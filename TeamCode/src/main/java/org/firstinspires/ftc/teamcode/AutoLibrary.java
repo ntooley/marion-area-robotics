@@ -11,7 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import java.lang.reflect.Array;
 import java.util.Locale;
 
-public class autoLibrary {
+public class AutoLibrary {
 
     private float hsvValues[] = {0F, 0F, 0F};
 
