@@ -136,10 +136,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
         rightMotor1.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        leftMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        leftMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightMotor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        DriveTrain.motorFloat();
 
         // get a reference to the color sensor.
         sensorColor = hardwareMap.get(ColorSensor.class, "sensor_color_distance");
@@ -340,6 +337,7 @@ public class BlueSkystoneTurn extends LinearOpMode {
             teleUpdate();
         }
 
+        DriveTrain.motorBrake();
         DriveTrain.stop();
         currentStatus = "Done";
         sleep(2000);
