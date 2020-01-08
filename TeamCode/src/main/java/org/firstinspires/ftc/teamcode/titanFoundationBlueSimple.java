@@ -56,7 +56,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Foundation Blue Simple", group="Foundation")
+@Autonomous(name="Foundation Blue Park", group="Foundation")
 public class titanFoundationBlueSimple extends LinearOpMode {
 
     /* Declare OpMode members. */

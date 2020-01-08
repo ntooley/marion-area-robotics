@@ -57,7 +57,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 
-@Autonomous(name="Foundation Red Simple", group="Foundation")
+@Autonomous(name="Foundation Red Park", group="Foundation")
 public class titanFoundationRedSimple extends LinearOpMode {
 
     /* Declare OpMode members. */
